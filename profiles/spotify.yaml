@@ -1,0 +1,3 @@
+description: Spotify sin red (solo música descargada)
+flatpak: com.spotify.Client
+loopback: false

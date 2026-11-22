@@ -1,0 +1,34 @@
+# Compiled binary
+/faraday
+/bin/
+
+# Go build/test artifacts
+*.test
+*.out
+*.prof
+cover.out
+coverage.txt
+coverage.html
+go.work
+go.work.sum
+/dist/
+
+# Editor / OS / Local tooling
+.idea/
+.vscode/
+*.swp
+.DS_Store
+.mcp.json
+.claude/
+
+# Secrets / credentials / bundles
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+*.secret*
+*credentials*
+*.bundle
