@@ -130,16 +130,19 @@ func cmdSave(args []string) int {
 	p := &profile.Profile{}
 	var positionals []string
 	for i := 0; i < len(before); i++ {
-		switch before[i] {
-		case "--loopback":
+		switch {
+		case before[i] == "--loopback":
 			p.Loopback = true
-		case "--flatpak":
+		case before[i] == "--flatpak":
 			if i+1 >= len(before) {
 				fmt.Fprintln(os.Stderr, "faraday save: --flatpak needs an app id")
 				return 2
 			}
 			i++
 			p.Flatpak = before[i]
+		case strings.HasPrefix(before[i], "-"):
+			fmt.Fprintf(os.Stderr, "faraday save: unknown flag %q\n", before[i])
+			return 2
 		default:
 			positionals = append(positionals, before[i])
 		}

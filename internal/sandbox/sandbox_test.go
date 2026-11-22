@@ -3,7 +3,10 @@ package sandbox
 import (
 	"bytes"
 	"context"
+	"errors"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -125,4 +128,54 @@ func TestFlatpakRunForceSkipsRunningCheck(t *testing.T) {
 	if called {
 		t.Fatal("Force must skip the already-running check")
 	}
+}
+
+func TestSelectBackendsWithPathIsolation(t *testing.T) {
+	t.Run("flatpak unavailable returns error", func(t *testing.T) {
+		t.Setenv("PATH", t.TempDir())
+		_, err := Select(Spec{Flatpak: true, FlatpakAppID: "com.example.App"})
+		if err == nil || !strings.Contains(err.Error(), "flatpak") {
+			t.Fatalf("expected flatpak unavailable error, got %v", err)
+		}
+	})
+
+	t.Run("force bwrap unavailable returns ErrNoBackend", func(t *testing.T) {
+		t.Setenv("PATH", t.TempDir())
+		_, err := Select(Spec{Cmd: []string{"true"}, ForceBwrap: true})
+		if !errors.Is(err, ErrNoBackend) {
+			t.Fatalf("got %v, want ErrNoBackend", err)
+		}
+	})
+
+	t.Run("force bwrap selects mock bwrap", func(t *testing.T) {
+		binDir := t.TempDir()
+		bwrapPath := filepath.Join(binDir, "bwrap")
+		if err := os.WriteFile(bwrapPath, []byte("#!/bin/sh\nexit 0\n"), 0755); err != nil {
+			t.Fatal(err)
+		}
+		t.Setenv("PATH", binDir)
+		r, err := Select(Spec{Cmd: []string{"true"}, ForceBwrap: true})
+		if err != nil {
+			t.Fatalf("Select(ForceBwrap) error = %v", err)
+		}
+		if r.Name() != "bwrap" {
+			t.Fatalf("got backend %q, want bwrap", r.Name())
+		}
+	})
+
+	t.Run("flatpak selects mock flatpak", func(t *testing.T) {
+		binDir := t.TempDir()
+		fpPath := filepath.Join(binDir, "flatpak")
+		if err := os.WriteFile(fpPath, []byte("#!/bin/sh\nexit 0\n"), 0755); err != nil {
+			t.Fatal(err)
+		}
+		t.Setenv("PATH", binDir)
+		r, err := Select(Spec{Flatpak: true, FlatpakAppID: "com.example.App"})
+		if err != nil {
+			t.Fatalf("Select(Flatpak) error = %v", err)
+		}
+		if r.Name() != "flatpak" {
+			t.Fatalf("got backend %q, want flatpak", r.Name())
+		}
+	})
 }

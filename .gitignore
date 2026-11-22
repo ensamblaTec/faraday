@@ -1,5 +1,6 @@
 # Compiled binary
 /faraday
+cmd/faraday/faraday
 /bin/
 
 # Go build/test artifacts
@@ -7,11 +8,14 @@
 *.out
 *.prof
 cover.out
-coverage.txt
-coverage.html
+coverage.*
 go.work
 go.work.sum
 /dist/
+
+# Local databases
+*.db
+*.sqlite*
 
 # Editor / OS / Local tooling
 .idea/
@@ -25,10 +29,15 @@ go.work.sum
 .env
 .env.*
 !.env.example
+.envrc
 *.key
 *.pem
 *.p12
 *.pfx
+secrets.*
+*.secrets*
+.secrets*
 *.secret*
 *credentials*
+!*.go
 *.bundle
